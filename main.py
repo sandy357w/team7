@@ -49,7 +49,8 @@ def open_player_entry():
         cursor.execute('''
             INSERT INTO players (id, codename)
             VALUES (%s, %s);
-        ''', ('500', 'BhodiLi'))
+        ''', ('500', 'BhodiLi'), ('232', 'Spark'))
+        
 
         # Commit the changes
         conn.commit()

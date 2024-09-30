@@ -1,14 +1,7 @@
-
-# display a splash screen for 3 seconds 
-# then move to a player entry screen 
-
 import tkinter as tk
-from tkinter import ttk
 from tkinter import *
 from PIL import Image, ImageTk
-
 import psycopg2
-from psycopg2 import sql
 
 
 # splash screen -> player entry
@@ -35,23 +28,16 @@ def open_player_entry():
         version = cursor.fetchone()
         print(f"Connected to - {version}")
 
-        # Example: creating a table
-        #cursor.execute('''
-        #    CREATE TABLE IF NOT EXISTS employees (
-        #        id SERIAL PRIMARY KEY,
-        #        name VARCHAR(100),
-        #        department VARCHAR(50),
-        #        salary DECIMAL
-        #    );
-        #''')
-
         # Insert sample data
         cursor.execute('''
             INSERT INTO players (id, codename)
             VALUES (%s, %s);
-        ''', ('500', 'BhodiLi'), ('232', 'Spark'))
+        ''', ('500', 'BhodiLi'))
+        cursor.execute('''
+            INSERT INTO players (id, codename)
+            VALUES (%s, %s);
+        ''', ('232', 'Spark'))
         
-
         # Commit the changes
         conn.commit()
 
@@ -98,7 +84,11 @@ def open_player_entry():
     # Frame green  
     green_team_frame = tk.Frame(player_entry, bg="darkgreen")
     green_team_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
-    
+
+
+    red_team_entries = []
+    green_team_entries = []
+
     # Red players
     for i in range(19):
         player_label = tk.Label(red_team_frame, text=f"{i+1}", bg="darkred", fg="white", font=("Arial", 12))
@@ -109,8 +99,6 @@ def open_player_entry():
 
         player_entry = tk.Entry(red_team_frame, font=("Arial", 12), width=20)
         player_entry.grid(row=i, column=2, padx=5, pady=2)
-
-        
 
     # Green players
     for i in range(19):
@@ -123,7 +111,87 @@ def open_player_entry():
         player_entry = tk.Entry(green_team_frame, font=("Arial", 12), width=20)
         player_entry.grid(row=i, column=2, padx=5, pady=2)
 
+    # Adding a new player input field and button
+    add_player_label = tk.Label(player_entry, text="Add New Player", bg="black", fg="white", font=("Arial", 16))
+    add_player_label.grid(row=2, column=0, columnspan=2, pady=10)
+
+    codename_entry = tk.Entry(player_entry, font=("Arial", 12), width=40)
+    codename_entry.grid(row=3, column=0, columnspan=2, pady=5)
+
+    add_player_button = tk.Button(player_entry, text="Add Player", command=lambda: add_player(codename_entry.get()), font=("Arial", 12), bg="darkgreen", fg="white")
+    add_player_button.grid(row=4, column=0, columnspan=2, pady=10)
+
+    populate_players(red_team_frame, green_team_frame)
+
     player_entry.mainloop()
+
+# Function to add a player to the database
+def add_player(codename):
+    connection_params = {
+        'dbname': 'photon',
+        'user': 'student',
+    }
+
+    try:
+        conn = psycopg2.connect(**connection_params)
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            INSERT INTO players (codename)
+            VALUES (%s);
+        ''', (codename,))
+        conn.commit()
+
+        populate_players(red_team_frame, green_team_frame)
+
+    except Exception as error:
+        print(f"Error inserting player: {error}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+# to get players to show up in GUI 
+def populate_players(red_team_frame, green_team_frame):
+    connection_params = {
+        'dbname': 'photon',
+        'user': 'student',
+    }
+
+    try:
+        conn = psycopg2.connect(**connection_params)
+        cursor = conn.cursor()
+
+        # Fetch players from the database
+        cursor.execute("SELECT * FROM players;")
+        players = cursor.fetchall()
+
+        # populate the entry fields
+        for widget in red_team_frame.winfo_children():
+            widget.destroy()
+
+        for i, player in enumerate(players[:19]):
+            player_label = tk.Label(red_team_frame, text=f"{i+1}. {player[1]}", bg="darkred", fg="white", font=("Arial", 12))
+            player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
+
+        for widget in green_team_frame.winfo_children():
+            widget.destroy()
+
+        for i, player in enumerate(players[19:]):
+            player_label = tk.Label(green_team_frame, text=f"{i+1}. {player[1]}", bg="darkgreen", fg="white", font=("Arial", 12))
+            player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
+
+    except Exception as error:
+        print(f"Error fetching players: {error}")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 
 # splash screen window
 splash_screen = tk.Tk()

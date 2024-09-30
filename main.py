@@ -28,16 +28,18 @@ def open_player_entry():
         version = cursor.fetchone()
         print(f"Connected to - {version}")
 
-        # Insert sample data
+        # Insert sample data (Ensure this is not causing duplicates)
         cursor.execute('''
             INSERT INTO players (id, codename)
-            VALUES (%s, %s);
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING;
         ''', ('500', 'BhodiLi'))
         cursor.execute('''
             INSERT INTO players (id, codename)
-            VALUES (%s, %s);
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING;
         ''', ('232', 'Spark'))
-       
+
         # Commit the changes
         conn.commit()
 
@@ -89,7 +91,7 @@ def open_player_entry():
     red_team_entries = []
     green_team_entries = []
 
-    # Red players
+    # Red players (19 players)
     for i in range(19):
         player_label = tk.Label(red_team_frame, text=f"{i+1}", bg="darkred", fg="white", font=("Arial", 12))
         player_label.grid(row=i, column=0, sticky="e", padx=5, pady=2)
@@ -102,7 +104,7 @@ def open_player_entry():
 
         red_team_entries.append((id_entry, codename_entry))
 
-    # Green players
+    # Green players (19 players)
     for i in range(19):
         player_label = tk.Label(green_team_frame, text=f"{i+1}", bg="darkgreen", fg="white", font=("Arial", 12))
         player_label.grid(row=i, column=0, sticky="e", padx=5, pady=2)
@@ -145,11 +147,21 @@ def add_player(player_id, codename):
         conn = psycopg2.connect(**connection_params)
         cursor = conn.cursor()
 
+        # Check if the player ID already exists
         cursor.execute('''
-            INSERT INTO players (id, codename)
-            VALUES (%s, %s);
-        ''', (player_id, codename))
-        conn.commit()
+            SELECT id FROM players WHERE id = %s;
+        ''', (player_id,))
+        result = cursor.fetchone()
+
+        if result:
+            print(f"Player with ID {player_id} already exists!")
+        else:
+            # Insert the new player if not already in the database
+            cursor.execute('''
+                INSERT INTO players (id, codename)
+                VALUES (%s, %s);
+            ''', (player_id, codename))
+            conn.commit()
 
         populate_players(red_team_frame, green_team_frame)
 
@@ -180,13 +192,15 @@ def populate_players(red_team_frame, green_team_frame):
         for widget in red_team_frame.winfo_children():
             widget.destroy()
 
+        for widget in green_team_frame.winfo_children():
+            widget.destroy()
+
+        # Populate Red Team (up to 19 players)
         for i, player in enumerate(players[:19]):
             player_label = tk.Label(red_team_frame, text=f"{i+1}. {player[1]}", bg="darkred", fg="white", font=("Arial", 12))
             player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 
-        for widget in green_team_frame.winfo_children():
-            widget.destroy()
-
+        # Populate Green Team (remaining players after 19)
         for i, player in enumerate(players[19:]):
             player_label = tk.Label(green_team_frame, text=f"{i+1}. {player[1]}", bg="darkgreen", fg="white", font=("Arial", 12))
             player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)

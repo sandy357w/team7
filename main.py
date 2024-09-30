@@ -21,14 +21,18 @@ def open_player_entry():
         conn = psycopg2.connect(**connection_params)
         cursor = conn.cursor()
 
-        # Execute a query
+        # Execute a query to check the connection
         cursor.execute("SELECT version();")
-
-        # Fetch and display the result
         version = cursor.fetchone()
         print(f"Connected to - {version}")
 
-        # Insert sample data (Ensure this is not causing duplicates)
+        # Ensure 'players' table has a unique constraint on 'id' column
+        cursor.execute('''
+            ALTER TABLE players ADD CONSTRAINT IF NOT EXISTS unique_player_id UNIQUE (id);
+        ''')
+        conn.commit()
+
+        # Insert sample data (Ensure no duplicates)
         cursor.execute('''
             INSERT INTO players (id, codename)
             VALUES (%s, %s)
@@ -43,7 +47,7 @@ def open_player_entry():
         # Commit the changes
         conn.commit()
 
-        # Fetch and display data from the table
+        # Fetch and display data from the table to check insertion
         cursor.execute("SELECT * FROM players;")
         rows = cursor.fetchall()
         for row in rows:
@@ -64,7 +68,7 @@ def open_player_entry():
     player_entry.title("Player Entry Screen")
     player_entry.configure(background="black")
    
-    # size of the window
+    # Set size of the window
     player_entry.geometry("800x600")
    
     # 2 columns for teams
@@ -79,11 +83,11 @@ def open_player_entry():
     green_team_label = tk.Label(player_entry, text="GREEN TEAM", bg="darkgreen", fg="white", font=("Arial", 16))
     green_team_label.grid(row=0, column=1, sticky="ew", padx=10, pady=10)
 
-    # Frame red  
+    # Frame for Red Team
     red_team_frame = tk.Frame(player_entry, bg="darkred")
     red_team_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
    
-    # Frame green  
+    # Frame for Green Team
     green_team_frame = tk.Frame(player_entry, bg="darkgreen")
     green_team_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
 
@@ -188,6 +192,9 @@ def populate_players(red_team_frame, green_team_frame):
         cursor.execute("SELECT * FROM players;")
         players = cursor.fetchall()
 
+        # Debugging: Print players fetched from the database
+        print(players)
+
         # Clear the frames before repopulating
         for widget in red_team_frame.winfo_children():
             widget.destroy()
@@ -195,12 +202,12 @@ def populate_players(red_team_frame, green_team_frame):
         for widget in green_team_frame.winfo_children():
             widget.destroy()
 
-        # Populate Red Team (up to 19 players)
+        # Populate Red Team 
         for i, player in enumerate(players[:19]):
             player_label = tk.Label(red_team_frame, text=f"{i+1}. {player[1]}", bg="darkred", fg="white", font=("Arial", 12))
             player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 
-        # Populate Green Team (remaining players after 19)
+        # Populate Green Team 
         for i, player in enumerate(players[19:]):
             player_label = tk.Label(green_team_frame, text=f"{i+1}. {player[1]}", bg="darkgreen", fg="white", font=("Arial", 12))
             player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
@@ -225,7 +232,6 @@ splash_screen.geometry("800x600")
 
 # splash screen image
 image = Image.open("logo.jpg")
-# once github created -> "images\logo.jpg"
 logo = ImageTk.PhotoImage(image)
 logo_label = tk.Label(splash_screen, image=logo)
 logo_label.pack()

@@ -115,14 +115,19 @@ def open_player_entry():
 
         green_team_entries.append((id_entry, codename_entry))
 
-    # Adding a new player input field and button
+    # Adding new player input fields and button
     add_player_label = tk.Label(player_entry, text="Add New Player", bg="black", fg="white", font=("Arial", 16))
     add_player_label.grid(row=2, column=0, columnspan=2, pady=10)
 
-    codename_entry = tk.Entry(player_entry, font=("Arial", 12), width=40)
-    codename_entry.grid(row=3, column=0, columnspan=2, pady=5)
+    id_entry = tk.Entry(player_entry, font=("Arial", 12), width=20)
+    id_entry.grid(row=3, column=0, padx=5, pady=5)
+    id_entry.insert(0, "Enter Player ID")  # Placeholder text
 
-    add_player_button = tk.Button(player_entry, text="Add Player", command=lambda: add_player(codename_entry.get()), font=("Arial", 12), bg="darkgreen", fg="white")
+    codename_entry = tk.Entry(player_entry, font=("Arial", 12), width=40)
+    codename_entry.grid(row=3, column=1, padx=5, pady=5)
+    codename_entry.insert(0, "Enter Player Codename")  # Placeholder text
+
+    add_player_button = tk.Button(player_entry, text="Add Player", command=lambda: add_player(id_entry.get(), codename_entry.get()), font=("Arial", 12), bg="darkgreen", fg="white")
     add_player_button.grid(row=4, column=0, columnspan=2, pady=10)
 
     populate_players(red_team_frame, green_team_frame)
@@ -130,7 +135,7 @@ def open_player_entry():
     player_entry.mainloop()
 
 # Function to add a player to the database
-def add_player(codename):
+def add_player(player_id, codename):
     connection_params = {
         'dbname': 'photon',
         'user': 'student',
@@ -141,9 +146,9 @@ def add_player(codename):
         cursor = conn.cursor()
 
         cursor.execute('''
-            INSERT INTO players (codename)
-            VALUES (%s);
-        ''', (codename,))
+            INSERT INTO players (id, codename)
+            VALUES (%s, %s);
+        ''', (player_id, codename))
         conn.commit()
 
         populate_players(red_team_frame, green_team_frame)

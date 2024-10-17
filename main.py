@@ -162,15 +162,6 @@ def populate_players(red_team_frame, green_team_frame):
             bg="darkgreen", fg="white", font=("Arial", 12)
         )
         player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
-def clear_player_entries(): 
-    for entry_pair in red_team_entries:
-        entry_pair[0].delete(0, END)  # Clear ID entry
-        entry_pair[1].delete(0, END)  # Clear Codename entry
-
-    for entry_pair in green_team_entries:
-        entry_pair[0].delete(0, END)  # Clear ID entry
-        entry_pair[1].delete(0, END)  # Clear Codename entry
-
 
 # Splash Screen Setup
 splash_screen = tk.Tk()

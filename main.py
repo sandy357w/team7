@@ -6,6 +6,7 @@ import psycopg2
 
 # splash screen -> player entry
 def open_player_entry():
+    global red_team_frame, green_team_frame
     splash_screen.destroy()
     # Define connection parameters
     connection_params = {
@@ -149,7 +150,7 @@ def add_player(codename):
             VALUES (%s);
         ''', (codename,))
         conn.commit()
-
+        global red_team_frame, green_team_frame
         populate_players(red_team_frame, green_team_frame)
 
     except Exception as error:

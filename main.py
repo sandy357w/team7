@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import *
 # from PIL import Image, ImageTk
 import PIL
+from PIL import Image, ImageTk
 import psycopg2
 
 

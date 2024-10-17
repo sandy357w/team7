@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import *
-from PIL import Image, ImageTk
+# from PIL import Image, ImageTk
+import PIL
 import psycopg2
 
 

@@ -98,7 +98,7 @@ def populate_players(red_team_frame, green_team_frame):
     for i, player in enumerate(red_team):
         player_label = tk.Label(
             red_team_frame,
-            text=f"{i + 1}. ID: {player[0]}, Codename: {player[1]}",
+            text=f"ID: {player[0]}, Codename: {player[1]}",
             bg="darkred", fg="white", font=("Arial", 12)
         )
         player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
@@ -107,7 +107,7 @@ def populate_players(red_team_frame, green_team_frame):
     for i, player in enumerate(green_team):
         player_label = tk.Label(
             green_team_frame,
-            text=f"{i + 1}. ID: {player[0]}, Codename: {player[1]}",
+            text=f"ID: {player[0]}, Codename: {player[1]}",
             bg="darkgreen", fg="white", font=("Arial", 12)
         )
         player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)

@@ -10,6 +10,55 @@ def open_player_entry():
     global red_team_frame, green_team_frame  # Declare frames as global to access in other functions
 
     splash_screen.destroy()
+    # Define connection parameters
+    connection_params = {
+        'dbname': 'photon',
+        'user': 'student',
+        #'password': 'student',
+        #'host': 'localhost',
+        #'port': '5432'
+    }
+
+    try:
+        # Connect to PostgreSQL
+        conn = psycopg2.connect(**connection_params)
+        cursor = conn.cursor()
+
+        # Execute a query
+        cursor.execute("SELECT version();")
+
+        # Fetch and display the result
+        version = cursor.fetchone()
+        print(f"Connected to - {version}")
+
+        # Insert sample data
+        cursor.execute('''
+            INSERT INTO players (id, codename)
+            VALUES (%s, %s);
+        ''', ('500', 'BhodiLi'))
+        cursor.execute('''
+            INSERT INTO players (id, codename)
+            VALUES (%s, %s);
+        ''', ('232', 'Spark'))
+       
+        # Commit the changes
+        conn.commit()
+
+        # Fetch and display data from the table
+        cursor.execute("SELECT * FROM players;")
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+
+    except Exception as error:
+        print(f"Error connecting to PostgreSQL database: {error}")
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
     # Create main player entry window
     player_entry = tk.Tk()
@@ -45,6 +94,8 @@ def open_player_entry():
     )
     add_player_button.grid(row=4, column=0, columnspan=2, pady=10)
 
+    player_entry.bind("<F12>", lambda event: clear_player_entries())
+
     player_entry.mainloop()
 
 def search_or_add_player(player_id, red_team_frame, green_team_frame):
@@ -75,7 +126,7 @@ def search_or_add_player(player_id, red_team_frame, green_team_frame):
         populate_players(red_team_frame, green_team_frame)
 
     except Exception as error:
-        print(f"Error: {error}")
+        print(f"Error connecting to PostgreSQL database: {error}")
 
     finally:
         if cursor:

@@ -30,38 +30,23 @@ def open_player_entry():
 
         # Execute a query
         cursor.execute("SELECT version();")
-
+        
         # Fetch and display the result
         version = cursor.fetchone()
         print(f"Connected to - {version}")
-
-        # Insert sample data
-        cursor.execute('''
-            INSERT INTO players (id, codename)
-            VALUES (%s, %s) ON CONFLICT DO NOTHING;
-        ''', ('500', 'BhodiLi'))
-        cursor.execute('''
-            INSERT INTO players (id, codename)
-            VALUES (%s, %s) ON CONFLICT DO NOTHING;
-        ''', ('232', 'Spark'))
-       
-        # Commit the changes
+        
         conn.commit()
-
-        # Fetch and display data from the table
+        
         cursor.execute("SELECT * FROM players;")
         rows = cursor.fetchall()
         for row in rows:
             print(row)
 
-        # Store fetched players in current_players
-        current_players.extend(rows)
 
     except Exception as error:
         print(f"Error connecting to PostgreSQL database: {error}")
 
     finally:
-        # Close the cursor and connection
         if cursor:
             cursor.close()
         if conn:
@@ -107,7 +92,7 @@ def open_player_entry():
     # Bind F12 key to clear all dynamic player entries
     player_entry.bind("<F12>", lambda event: clear_player_entries())
 
-    # Populate players initially
+    # Populate the player grid with placeholders initially
     populate_players(red_team_frame, green_team_frame)
 
     player_entry.mainloop()
@@ -127,7 +112,7 @@ def search_or_add_player(player_id, red_team_frame, green_team_frame):
         player = cursor.fetchone()
 
         if player:
-            # If found, add the player to the list
+            # If found, display the player in the appropriate frame
             current_players.append(player)
         else:
             # If not found, prompt for codename
@@ -157,7 +142,7 @@ def populate_players(red_team_frame, green_team_frame):
     for widget in green_team_frame.winfo_children():
         widget.destroy()
 
-    # Loop to populate the teams with players or placeholders
+    # Populate frames with players or placeholders
     for i in range(15):
         # Handle Red Team Players
         if i < len(current_players[:15]):
@@ -183,7 +168,7 @@ def populate_players(red_team_frame, green_team_frame):
         )
         green_player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 
-    # Configure frames to expand properly with window size
+    # Configure frames to expand with the window size
     red_team_frame.grid_rowconfigure(list(range(15)), weight=1)
     green_team_frame.grid_rowconfigure(list(range(15)), weight=1)
     red_team_frame.grid_columnconfigure(0, weight=1)

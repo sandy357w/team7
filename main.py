@@ -38,11 +38,11 @@ def open_player_entry():
         # Insert sample data
         cursor.execute('''
             INSERT INTO players (id, codename)
-            VALUES (%s, %s);
+            VALUES (%s, %s) ON CONFLICT DO NOTHING;
         ''', ('500', 'BhodiLi'))
         cursor.execute('''
             INSERT INTO players (id, codename)
-            VALUES (%s, %s);
+            VALUES (%s, %s) ON CONFLICT DO NOTHING;
         ''', ('232', 'Spark'))
        
         # Commit the changes
@@ -53,6 +53,9 @@ def open_player_entry():
         rows = cursor.fetchall()
         for row in rows:
             print(row)
+
+        # Store fetched players in current_players
+        current_players.extend(rows)
 
     except Exception as error:
         print(f"Error connecting to PostgreSQL database: {error}")
@@ -90,7 +93,7 @@ def open_player_entry():
 
     id_entry = tk.Entry(player_entry, font=("Arial", 12), width=20)
     id_entry.grid(row=3, column=0, columnspan=2, pady=5)
-    
+
     # Store the player entry in the dynamic list
     player_entries.append(id_entry)
 
@@ -104,8 +107,10 @@ def open_player_entry():
     # Bind F12 key to clear all dynamic player entries
     player_entry.bind("<F12>", lambda event: clear_player_entries())
 
-    player_entry.mainloop()
+    # Populate players initially
     populate_players(red_team_frame, green_team_frame)
+
+    player_entry.mainloop()
 
 def search_or_add_player(player_id, red_team_frame, green_team_frame):
     connection_params = {
@@ -122,7 +127,7 @@ def search_or_add_player(player_id, red_team_frame, green_team_frame):
         player = cursor.fetchone()
 
         if player:
-            # If found, display the player in the appropriate frame
+            # If found, add the player to the list
             current_players.append(player)
         else:
             # If not found, prompt for codename
@@ -132,7 +137,8 @@ def search_or_add_player(player_id, red_team_frame, green_team_frame):
                 conn.commit()
                 current_players.append((player_id, codename))
                 UDP_Client.passInfo(player_id, codename, 1)
-        
+
+        # Refresh the player table
         populate_players(red_team_frame, green_team_frame)
 
     except Exception as error:
@@ -144,34 +150,6 @@ def search_or_add_player(player_id, red_team_frame, green_team_frame):
         if conn:
             conn.close()
 
-# def populate_players(red_team_frame, green_team_frame):
-#     # Clear the frames before repopulating
-#     for widget in red_team_frame.winfo_children():
-#         widget.destroy()
-#     for widget in green_team_frame.winfo_children():
-#         widget.destroy()
-
-#     # Divide the players into red and green teams
-#     red_team = current_players[:15]
-#     green_team = current_players[15:]
-
-#     # Display Red Team Players
-#     for i, player in enumerate(red_team):
-#         player_label = tk.Label(
-#             red_team_frame,
-#             text=f"ID: {player[0]}, Codename: {player[1]}",
-#             bg="darkred", fg="white", font=("Arial", 12)
-#         )
-#         player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
-
-#     # Display Green Team Players
-#     for i, player in enumerate(green_team):
-#         player_label = tk.Label(
-#             green_team_frame,
-#             text=f"ID: {player[0]}, Codename: {player[1]}",
-#             bg="darkgreen", fg="white", font=("Arial", 12)
-#         )
-#         player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 def populate_players(red_team_frame, green_team_frame):
     # Clear any existing widgets in the frames
     for widget in red_team_frame.winfo_children():
@@ -179,30 +157,37 @@ def populate_players(red_team_frame, green_team_frame):
     for widget in green_team_frame.winfo_children():
         widget.destroy()
 
-    # Loop to create 15 rows of placeholders for each team
+    # Loop to populate the teams with players or placeholders
     for i in range(15):
-        # Red Team Player Box with Placeholder
+        # Handle Red Team Players
+        if i < len(current_players[:15]):
+            player = current_players[i]
+            text = f"ID: {player[0]}  Codename: {player[1]}"
+        else:
+            text = "ID: ---  Codename: ---"  # Placeholder
+
         red_player_label = tk.Label(
-            red_team_frame,
-            text=f"ID: ---  Codename: ---",  # Placeholder text
-            bg="darkred", fg="white", font=("Arial", 12)
+            red_team_frame, text=text, bg="darkred", fg="white", font=("Arial", 12)
         )
         red_player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 
-        # Green Team Player Box with Placeholder
+        # Handle Green Team Players
+        if i < len(current_players[15:]):
+            player = current_players[15 + i]
+            text = f"ID: {player[0]}  Codename: {player[1]}"
+        else:
+            text = "ID: ---  Codename: ---"  # Placeholder
+
         green_player_label = tk.Label(
-            green_team_frame,
-            text=f"ID: ---  Codename: ---",  # Placeholder text
-            bg="darkgreen", fg="white", font=("Arial", 12)
+            green_team_frame, text=text, bg="darkgreen", fg="white", font=("Arial", 12)
         )
         green_player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 
-    # Configure the frames to expand properly with the window size
+    # Configure frames to expand properly with window size
     red_team_frame.grid_rowconfigure(list(range(15)), weight=1)
     green_team_frame.grid_rowconfigure(list(range(15)), weight=1)
     red_team_frame.grid_columnconfigure(0, weight=1)
     green_team_frame.grid_columnconfigure(0, weight=1)
-
 
 def clear_player_entries():
     # Function to clear all dynamically created player entries

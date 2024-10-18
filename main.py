@@ -105,6 +105,7 @@ def open_player_entry():
     player_entry.bind("<F12>", lambda event: clear_player_entries())
 
     player_entry.mainloop()
+    populate_players(red_team_frame, green_team_frame)
 
 def search_or_add_player(player_id, red_team_frame, green_team_frame):
     connection_params = {
@@ -143,34 +144,65 @@ def search_or_add_player(player_id, red_team_frame, green_team_frame):
         if conn:
             conn.close()
 
+# def populate_players(red_team_frame, green_team_frame):
+#     # Clear the frames before repopulating
+#     for widget in red_team_frame.winfo_children():
+#         widget.destroy()
+#     for widget in green_team_frame.winfo_children():
+#         widget.destroy()
+
+#     # Divide the players into red and green teams
+#     red_team = current_players[:15]
+#     green_team = current_players[15:]
+
+#     # Display Red Team Players
+#     for i, player in enumerate(red_team):
+#         player_label = tk.Label(
+#             red_team_frame,
+#             text=f"ID: {player[0]}, Codename: {player[1]}",
+#             bg="darkred", fg="white", font=("Arial", 12)
+#         )
+#         player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
+
+#     # Display Green Team Players
+#     for i, player in enumerate(green_team):
+#         player_label = tk.Label(
+#             green_team_frame,
+#             text=f"ID: {player[0]}, Codename: {player[1]}",
+#             bg="darkgreen", fg="white", font=("Arial", 12)
+#         )
+#         player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 def populate_players(red_team_frame, green_team_frame):
-    # Clear the frames before repopulating
+    # Clear any existing widgets in the frames
     for widget in red_team_frame.winfo_children():
         widget.destroy()
     for widget in green_team_frame.winfo_children():
         widget.destroy()
 
-    # Divide the players into red and green teams
-    red_team = current_players[:15]
-    green_team = current_players[15:]
-
-    # Display Red Team Players
-    for i, player in enumerate(red_team):
-        player_label = tk.Label(
+    # Loop to create 15 rows of placeholders for each team
+    for i in range(15):
+        # Red Team Player Box with Placeholder
+        red_player_label = tk.Label(
             red_team_frame,
-            text=f"ID: {player[0]}, Codename: {player[1]}",
+            text=f"ID: ---  Codename: ---",  # Placeholder text
             bg="darkred", fg="white", font=("Arial", 12)
         )
-        player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
+        red_player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
 
-    # Display Green Team Players
-    for i, player in enumerate(green_team):
-        player_label = tk.Label(
+        # Green Team Player Box with Placeholder
+        green_player_label = tk.Label(
             green_team_frame,
-            text=f"ID: {player[0]}, Codename: {player[1]}",
+            text=f"ID: ---  Codename: ---",  # Placeholder text
             bg="darkgreen", fg="white", font=("Arial", 12)
         )
-        player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
+        green_player_label.grid(row=i, column=0, sticky="ew", padx=5, pady=2)
+
+    # Configure the frames to expand properly with the window size
+    red_team_frame.grid_rowconfigure(list(range(15)), weight=1)
+    green_team_frame.grid_rowconfigure(list(range(15)), weight=1)
+    red_team_frame.grid_columnconfigure(0, weight=1)
+    green_team_frame.grid_columnconfigure(0, weight=1)
+
 
 def clear_player_entries():
     # Function to clear all dynamically created player entries

@@ -3,6 +3,7 @@ from tkinter import simpledialog
 from PIL import Image, ImageTk
 import psycopg2
 import UDP_Client
+import GameActionScreen
 
 # Store currently added players for this session
 current_players = []
@@ -86,10 +87,16 @@ def open_player_entry():
     # Bind F12 to clear entries and Fn + F5 to start the countdown
     player_entry.bind("<F12>", lambda event: clear_player_entries())
     player_entry.bind("<F5>", lambda event: start_countdown(30))  # Start a 30-second countdown
+    # When pressing the F5 key, call the openGameActionScreen() method
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_F5:
+                openGameActionScreen()
 
     populate_players(red_team_frame, green_team_frame)
 
     player_entry.mainloop()
+
+def openGameActionScreen()
 
 def start_countdown(seconds):
     " 30-second countdown timer"
